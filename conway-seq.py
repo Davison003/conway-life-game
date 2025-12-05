@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 import time
 
 def contar_vizinhos(grid, x, y, N):
@@ -39,8 +40,13 @@ def passo_simulacao(grid, N):
 
 # exec principal
 if __name__ == "__main__":
-    N = 100  # tamanho da grade
-    steps = 50 # num de gens
+    parser = argparse.ArgumentParser(description="Conway's Game of Life - Sequential")
+    parser.add_argument('--N', type=int, default=200, help='Grid size (NxN)')
+    parser.add_argument('--steps', type=int, default=10, help='Number of generations')
+    args = parser.parse_args()
+
+    N = args.N
+    steps = args.steps
     
     # init grid random
     grid = np.random.choice([0, 1], size=(N, N))

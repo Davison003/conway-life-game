@@ -1,4 +1,5 @@
 import numpy as np
+import argparse
 import threading
 import time
 
@@ -14,15 +15,13 @@ def contar_vizinhos(grid, x, y, N):
     return total
 
 # vars globais 
-N = 500
-NUM_THREADS = 10
-STEPS = 80
-grid = np.random.choice([0, 1], size=(N, N))
-novo_grid = np.zeros((N, N), dtype=int)
-
-# barreira para sincronizar as threads ao fim de cada gen
-# esperar NUM_THREADS + 1 pq main thread tbm espera pra trocar os ponteiros
-barrier = threading.Barrier(NUM_THREADS + 1)
+# Configuração via argumentos será feita no main
+# N = 200
+# NUM_THREADS = 1
+# STEPS = 10
+grid = None
+novo_grid = None
+barrier = None
 
 def worker(thread_id, start_row, end_row):
     """Função executada por cada thread."""
@@ -45,6 +44,21 @@ def worker(thread_id, start_row, end_row):
         barrier.wait()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Conway's Game of Life - Parallel")
+    parser.add_argument('--N', type=int, default=200, help='Grid size (NxN)')
+    parser.add_argument('--steps', type=int, default=10, help='Number of generations')
+    parser.add_argument('--threads', type=int, default=1, help='Number of threads')
+    args = parser.parse_args()
+
+    N = args.N
+    STEPS = args.steps
+    NUM_THREADS = args.threads
+
+    # Inicializa globais
+    grid = np.random.choice([0, 1], size=(N, N))
+    novo_grid = np.zeros((N, N), dtype=int)
+    barrier = threading.Barrier(NUM_THREADS + 1)
+
     threads = []
     rows_per_thread = N // NUM_THREADS
     
@@ -74,4 +88,4 @@ if __name__ == "__main__":
     for th in threads:
         th.join()
 
-    print(f"Paralelo (Threads): Tempo total: {time.time() - start_time:.4f}s")
+    print(f"Paralelo (Threads): Tempo total para {STEPS} gerações com grade {N}x{N} com {NUM_THREADS} threads: {time.time() - start_time:.4f}s")

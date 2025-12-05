@@ -2,6 +2,7 @@ import socket
 import pickle
 import numpy as np
 import time
+import argparse
 
 def enviar_receber(sock, dados):
     """Envia objeto serializado e aguarda resposta."""
@@ -24,9 +25,18 @@ def enviar_receber(sock, dados):
     return pickle.loads(b''.join(chunks))
 
 if __name__ == "__main__":
-    N = 500
-    STEPS = 30
-    WORKERS_PORTS = [5000, 5001] # Assumindo 2 workers rodando
+    parser = argparse.ArgumentParser(description="Conway's Game of Life - Distributed Master")
+    parser.add_argument('--N', type=int, default=200, help='Grid size (NxN)')
+    parser.add_argument('--steps', type=int, default=10, help='Number of generations')
+    parser.add_argument('--num-workers', type=int, default=1, help='Number of workers')
+    args = parser.parse_args()
+
+    N = args.N
+    STEPS = args.steps
+    num_workers = args.num_workers
+    
+    # Gera portas automaticamente começando de 5000
+    WORKERS_PORTS = [5000 + i for i in range(num_workers)]
     
     # Inicializa grid
     grid = np.random.choice([0, 1], size=(N, N))
@@ -43,7 +53,7 @@ if __name__ == "__main__":
             print(f"Não foi possível conectar na porta {port}. Rode o worker_socket.py primeiro.")
             exit()
             
-    num_workers = len(conexoes)
+    # num_workers já está definido
     rows_per_worker = N // num_workers
     
     start_time = time.time()
@@ -79,7 +89,7 @@ if __name__ == "__main__":
         grid = np.vstack(novos_pedacos)
         # print(f"Geração {s+1} Distribuída concluída.")
 
-    print(f"Distribuído: Tempo total: {time.time() - start_time:.4f}s")
+    print(f"Distribuído: Tempo total para {STEPS} gerações com grade {N}x{N} com {num_workers} workers: {time.time() - start_time:.4f}s")
     
     # Fecha conexões
     for c in conexoes: c.close()
