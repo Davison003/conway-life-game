@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 def contar_vizinhos(grid, x, y, cols):
-    # Lógica idêntica, mas cuidado: x é relativo à sub-grade recebida
+    # logica similar, mas x eh relativo a sub-grade recebida
     rows = len(grid)
     total = 0
     for i in range(-1, 2):
@@ -21,10 +21,10 @@ def processar_pedaco(sub_grid_com_halo):
     """
     rows = len(sub_grid_com_halo)
     cols = len(sub_grid_com_halo[0])
-    # O resultado não terá as linhas de halo
+    # resultado sem as linhas de halo
     resultado = [] 
     
-    # Começa do 1 e vai até rows-1 para não processar os halos (que servem só pra leitura)
+    # comeca do 1 e vai ate rows-1 para nao processar os halos (que servem pra leitura)
     for i in range(1, rows - 1):
         nova_linha = []
         for j in range(cols):
@@ -55,8 +55,8 @@ def start_worker(port):
     
     while True:
         try:
-            # 1. Recebe dados (tamanho primeiro, depois payload)
-            # Protocolo simples: 4 bytes int indicando tamanho
+            # recebe dados (tamanho primeiro, depois payload)
+            # protocolo simples -> 4 bytes int indicando tamanho
             data_len_bytes = conn.recv(4)
             if not data_len_bytes: break
             data_len = int.from_bytes(data_len_bytes, 'big')
@@ -72,10 +72,10 @@ def start_worker(port):
             data = b''.join(chunks)
             sub_grid = pickle.loads(data)
             
-            # 2. Processa
+            # processa
             novo_pedaco = processar_pedaco(sub_grid)
             
-            # 3. Envia resposta
+            # envia resposta
             resp_data = pickle.dumps(novo_pedaco)
             conn.sendall(len(resp_data).to_bytes(4, 'big') + resp_data)
             
@@ -85,7 +85,6 @@ def start_worker(port):
     conn.close()
 
 if __name__ == "__main__":
-    # Para testar, altere a porta manualmente ou passe via argumento
     import sys
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 5000
     start_worker(port)
